@@ -25,16 +25,27 @@ def extract_text_from_elements(elements):
         ref.append(element.get_text(separator=' ', strip=True))
     return ref
 
+def extract_strong_from_paragraph(paragraphs):
+    """
+    Extracts text from <strong> tags within <p> elements.
+    """
+    strong_texts = []
+    for paragraph in paragraphs:
+        strong_tags = paragraph.find_all('strong')  # Find all <strong> tags
+        for strong_tag in strong_tags:
+            strong_texts.append(strong_tag.get_text(strip=True))  # Extract text
+    return strong_texts
+
 
 def main():
     data = []
     
     url = 'https://www.hukumonline.com'
     
-    for i in range(23, 173+1):
+    for i in range(1, 22+1):
         print(f'Halaman ke {i}')
         
-        response = requests.get(url+f'/klinik/pidana/page/{i}/')
+        response = requests.get(url+f'/klinik/teknologi/page/{i}/')
         soup = BeautifulSoup(response.content, 'html.parser')
         section = soup.find(id='result-list')
         
@@ -65,9 +76,9 @@ def main():
                         question = question_content.get_text()
                         
                     content2 = new_soup.find('div', class_='css-103zlhi elbhtsw0')
-                    
-                    answer_content = content2.find('div', class_='css-c816ma e1vjmfpm0')
-                    answer = answer_content.get_text() if answer_content else "None"
+                    if content2:
+                        paragraphs = content2.find_all(['p', 'div'])
+                        answer = extract_strong_from_paragraph(paragraphs)
                     
                     print(title)
                     print(question)
@@ -81,7 +92,7 @@ def main():
                 except:
                     pass
             
-            write_to_csv(data, file_path = 'hukum_online_pidana.csv')
+            write_to_csv(data, file_path = 'hukum_online_tech_v2.csv')
             data.clear()
             
         except:
